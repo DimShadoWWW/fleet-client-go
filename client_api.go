@@ -130,6 +130,10 @@ func (this *ClientAPI) Destroy(name string) error {
 	return nil
 }
 
+func (this *ClientAPI) StatusAll() ([]UnitStatus, error) {
+	return nil, fmt.Errorf("Method not implemented: ClientAPI.StatusAll")
+}
+
 func (this *ClientAPI) Status(name string) (*Status, error) {
 	return nil, fmt.Errorf("Method not implemented: ClientAPI.Status")
 }
