@@ -98,3 +98,23 @@ func (this *ClientCLI) Status(name string) (*Status, error) {
 	// Return running=false, because we didn't find it
 	return nil, fmt.Errorf("Job not found: %s", name)
 }
+
+func (this *ClientCLI) JournalF(name string) (chan string, error) {
+	cmd := execPkg.Command(FLEETCTL, ENDPOINT_OPTION, this.etcdPeer, "journal", "-f", name)
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return nil, err
+	}
+	if err := cmd.Start(); err != nil {
+		return nil, err
+	}
+
+	linec := make(chan string)
+	scanner := bufio.NewScanner(stdout)
+	go func() {
+		for scanner.Scan() {
+			linec <- scanner.Text()
+		}
+	}()
+	return linec, nil
+}
