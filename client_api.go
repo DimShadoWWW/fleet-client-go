@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"net/url"
 )
 
 const (
@@ -36,7 +37,8 @@ func NewClientAPIWithSocket(socket string) FleetClient {
 		Transport: &trans,
 	}
 
-	c, _ := client.NewHTTPClient(&hc, "http://localhost/")
+	u, _ := url.Parse("http://localhost/")
+	c, _ := client.NewHTTPClient(&hc, *u)
 
 	return &ClientAPI{
 		client: c,
