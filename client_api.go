@@ -142,6 +142,10 @@ func (this *ClientAPI) JournalF(name string) (chan string, error) {
 	return nil, fmt.Errorf("Method not implemented: ClientAPI.JournalF")
 }
 
+func (this *ClientAPI) MachineAll() ([]MachineStatus, error) {
+	return nil, fmt.Errorf("Method not implemented: ClientAPI.MachineAll")
+}
+
 func (this *ClientAPI) StatusUnit(name string) (UnitStatus, error) {
 	// Get unit state.
 	unitState, err := this.unitState(name)

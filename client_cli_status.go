@@ -120,3 +120,43 @@ func (this *ClientCLI) JournalF(name string) (chan string, error) {
 	}()
 	return linec, nil
 }
+
+func (this *ClientCLI) MachineAll() ([]MachineStatus, error) {
+	cmd := execPkg.Command(FLEETCTL, ENDPOINT_OPTION, this.etcdPeer, "list-machines", "--full=true")
+	stdout, err := exec(cmd)
+	if err != nil {
+		return []MachineStatus{}, err
+	}
+
+	return parseMachineStatusOutput(stdout)
+}
+
+func parseMachineStatusOutput(output string) ([]MachineStatus, error) {
+	result := make([]MachineStatus, 0)
+
+	scanner := bufio.NewScanner(strings.NewReader(output))
+	// Scan each line of input.
+	lineCount := 0
+	for scanner.Scan() {
+		line := scanner.Text()
+		lineCount++
+		if lineCount == 1 {
+			continue
+		}
+
+		words := filterEmpty(strings.Split(line, "\t"))
+		unitStatus := MachineStatus{
+			Machine:   words[0],
+			IPAddress: words[1],
+			Metadata:  words[2],
+		}
+		result = append(result, unitStatus)
+	}
+
+	// When finished scanning if any error other than io.EOF occured
+	// it will be returned by scanner.Err().
+	if err := scanner.Err(); err != nil {
+		return result, scanner.Err()
+	}
+	return result, nil
+}
