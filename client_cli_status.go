@@ -98,7 +98,10 @@ func (this *ClientCLI) Status(name string) (*Status, error) {
 }
 
 func (this *ClientCLI) JournalF(name string) (chan string, error) {
+	cmdY := execPkg.Command("echo", "y")
 	cmd := execPkg.Command(FLEETCTL, ENDPOINT_OPTION, this.etcdPeer, "journal", "-f", name)
+
+	cmd.Stdin, _ = cmdY.StdoutPipe()
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return nil, err
@@ -106,6 +109,7 @@ func (this *ClientCLI) JournalF(name string) (chan string, error) {
 	if err := cmd.Start(); err != nil {
 		return nil, err
 	}
+	cmdY.Run()
 
 	linec := make(chan string)
 	scanner := bufio.NewScanner(stdout)
