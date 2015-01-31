@@ -1,4 +1,5 @@
 # fleet-client-go
+[![Godoc](http://img.shields.io/badge/godoc-reference-blue.svg?style=flat)](https://godoc.org/github.com/DimShadoWWW/fleet-client-go) 
 
 Currently that client requires a `fleetctl` binary available to execute. Thus
 there is no ssh connection used, the possible commands are `submit`, `start`,
@@ -10,7 +11,7 @@ A new way to use fleets http api has been implemented.
 
 ## install
 ```go
-import fleetClientPkg "github.com/catalyst-zero/fleet-client-go"
+import fleetClientPkg "github.com/DimShadoWWW/fleet-client-go"
 ```
 
 ## usage
