@@ -52,6 +52,12 @@ type UnitStatus struct {
 	Machine string
 }
 
+type MachineStatus struct {
+	Machine   string
+	IPAddress string
+	Metadata  string
+}
+
 type Status struct {
 	Running     bool
 	ContainerIP string
@@ -70,6 +76,9 @@ type FleetClient interface {
 	Destroy(name string) error
 	Status(name string) (*Status, error) // Deprecated, use StatusUnit()
 	StatusUnit(name string) (UnitStatus, error)
+	StatusAll() ([]UnitStatus, error)
+	JournalF(name string) (chan string, error)
+	MachineAll() ([]MachineStatus, error)
 }
 
 func NewClient() FleetClient {

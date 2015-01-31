@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"net/url"
 )
 
 const (
@@ -36,7 +37,8 @@ func NewClientAPIWithSocket(socket string) FleetClient {
 		Transport: &trans,
 	}
 
-	c, _ := client.NewHTTPClient(&hc, "http://localhost/")
+	u, _ := url.Parse("http://localhost/")
+	c, _ := client.NewHTTPClient(&hc, *u)
 
 	return &ClientAPI{
 		client: c,
@@ -128,8 +130,20 @@ func (this *ClientAPI) Destroy(name string) error {
 	return nil
 }
 
+func (this *ClientAPI) StatusAll() ([]UnitStatus, error) {
+	return nil, fmt.Errorf("Method not implemented: ClientAPI.StatusAll")
+}
+
 func (this *ClientAPI) Status(name string) (*Status, error) {
 	return nil, fmt.Errorf("Method not implemented: ClientAPI.Status")
+}
+
+func (this *ClientAPI) JournalF(name string) (chan string, error) {
+	return nil, fmt.Errorf("Method not implemented: ClientAPI.JournalF")
+}
+
+func (this *ClientAPI) MachineAll() ([]MachineStatus, error) {
+	return nil, fmt.Errorf("Method not implemented: ClientAPI.MachineAll")
 }
 
 func (this *ClientAPI) StatusUnit(name string) (UnitStatus, error) {

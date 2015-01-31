@@ -28,7 +28,13 @@ func exec(cmd *execPkg.Cmd) (string, error) {
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 
-	if err := cmd.Run(); err != nil {
+	err := cmd.Run()
+
+	if result := stdout.String(); result != "" {
+		return result, nil
+	}
+
+	if err != nil {
 		return "", err
 	}
 
@@ -36,7 +42,7 @@ func exec(cmd *execPkg.Cmd) (string, error) {
 		return "", fmt.Errorf(err)
 	}
 
-	return stdout.String(), nil
+	return "", nil
 }
 
 // filterEmpty returns an array containing all non-empty strings of the input array.

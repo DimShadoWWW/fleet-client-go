@@ -18,7 +18,7 @@ func (status UnitStatus) MachineIP() string {
 // StatusAll executes "fleetctl status" and parses the output table. Thus, certain fields can be mangled or
 // shortened, e.g. the machine column.
 func (this *ClientCLI) StatusAll() ([]UnitStatus, error) {
-	cmd := execPkg.Command(FLEETCTL, ENDPOINT_OPTION, this.etcdPeer, "list-units", "--fields=unit,state,load,active,sub,desc,machine")
+	cmd := execPkg.Command(FLEETCTL, ENDPOINT_OPTION, this.etcdPeer, "list-units", "--full=true", "-l=true", "--fields=unit,load,active,sub,machine")
 	stdout, err := exec(cmd)
 	if err != nil {
 		return []UnitStatus{}, err
@@ -42,13 +42,11 @@ func parseFleetStatusOutput(output string) ([]UnitStatus, error) {
 
 		words := filterEmpty(strings.Split(line, "\t"))
 		unitStatus := UnitStatus{
-			Unit:        words[0],
-			State:       words[1],
-			Load:        words[2],
-			Active:      words[3],
-			Sub:         words[4],
-			Description: words[5],
-			Machine:     words[6],
+			Unit:    words[0],
+			Load:    words[1],
+			Active:  words[2],
+			Sub:     words[3],
+			Machine: words[4],
 		}
 		result = append(result, unitStatus)
 	}
@@ -97,4 +95,68 @@ func (this *ClientCLI) Status(name string) (*Status, error) {
 	}
 	// Return running=false, because we didn't find it
 	return nil, fmt.Errorf("Job not found: %s", name)
+}
+
+func (this *ClientCLI) JournalF(name string) (chan string, error) {
+	cmdY := execPkg.Command("echo", "y")
+	cmd := execPkg.Command(FLEETCTL, ENDPOINT_OPTION, this.etcdPeer, "journal", "-f", name)
+
+	cmd.Stdin, _ = cmdY.StdoutPipe()
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return nil, err
+	}
+	if err := cmd.Start(); err != nil {
+		return nil, err
+	}
+	cmdY.Run()
+
+	linec := make(chan string)
+	scanner := bufio.NewScanner(stdout)
+	go func() {
+		for scanner.Scan() {
+			linec <- scanner.Text()
+		}
+	}()
+	return linec, nil
+}
+
+func (this *ClientCLI) MachineAll() ([]MachineStatus, error) {
+	cmd := execPkg.Command(FLEETCTL, ENDPOINT_OPTION, this.etcdPeer, "list-machines", "--full=true")
+	stdout, err := exec(cmd)
+	if err != nil {
+		return []MachineStatus{}, err
+	}
+
+	return parseMachineStatusOutput(stdout)
+}
+
+func parseMachineStatusOutput(output string) ([]MachineStatus, error) {
+	result := make([]MachineStatus, 0)
+
+	scanner := bufio.NewScanner(strings.NewReader(output))
+	// Scan each line of input.
+	lineCount := 0
+	for scanner.Scan() {
+		line := scanner.Text()
+		lineCount++
+		if lineCount == 1 {
+			continue
+		}
+
+		words := filterEmpty(strings.Split(line, "\t"))
+		unitStatus := MachineStatus{
+			Machine:   words[0],
+			IPAddress: words[1],
+			Metadata:  words[2],
+		}
+		result = append(result, unitStatus)
+	}
+
+	// When finished scanning if any error other than io.EOF occured
+	// it will be returned by scanner.Err().
+	if err := scanner.Err(); err != nil {
+		return result, scanner.Err()
+	}
+	return result, nil
 }
